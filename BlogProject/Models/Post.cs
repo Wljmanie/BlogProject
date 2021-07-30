@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using BlogProject.Enums;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
@@ -16,7 +17,7 @@ namespace BlogProject.Models
         public string AuthorId { get; set; }
 
         [Required]
-        [StringLength(75, ErrorMessage ="The {0} must be at least {2} and at most {1} characters.", MinimumLength = 2)]
+        [StringLength(75, ErrorMessage = "The {0} must be at least {2} and at most {1} characters.", MinimumLength = 2)]
         public string Title { get; set; }
         [Required]
         [StringLength(200, ErrorMessage = "The {0} must be at least {2} and at most {1} characters.", MinimumLength = 2)]
@@ -31,7 +32,8 @@ namespace BlogProject.Models
         [Display(Name = "Updated Date")]
         public DateTime? Updated { get; set; }
 
-        public bool IsReady { get; set; }
+        public ReadyStatus ReadyStatus { get; set; } 
+
 
         public string Slug { get; set; }
 
