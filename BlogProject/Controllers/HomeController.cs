@@ -1,4 +1,6 @@
 ﻿using BlogProject.Models;
+using BlogProject.Services;
+using BlogProject.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
@@ -12,10 +14,12 @@ namespace BlogProject.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
+        private readonly IBlogEmailSender _blogEmailSender;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(ILogger<HomeController> logger, IBlogEmailSender blogEmailSender)
         {
             _logger = logger;
+            _blogEmailSender = blogEmailSender;
         }
 
         public IActionResult Index()
@@ -28,10 +32,24 @@ namespace BlogProject.Controllers
             return View();
         }
 
+        [HttpGet]
         public IActionResult Contact()
         {
             return View();
         }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Contact(ContactMe model)
+        {
+            model.Message = $"{model.Message} <hr/> Dit werkt ofso.";
+            await _blogEmailSender.SendContactEmailAsync(model.Email, model.Name, model.Subject, model.Message);
+
+
+            return RedirectToAction("Index");
+        }
+
+
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
