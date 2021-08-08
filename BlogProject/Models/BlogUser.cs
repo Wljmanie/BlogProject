@@ -20,6 +20,10 @@ namespace BlogProject.Models
         [Display(Name = "Last Name")]
         public string LastName { get; set; }
 
+       
+
+
+
         public byte[] ImageData { get; set; }
         public string ImageType { get; set; }
         //public IFormFile Image { get; set; }
