@@ -59,6 +59,8 @@ namespace BlogProject
             services.AddScoped<IBlogEmailSender, EmailService>();
             //Register our Image Service
             services.AddScoped<IImageService, BasicImageService>();
+            //Register our Slug Service
+            services.AddScoped<ISlugService, BasicSlugService>();
 
 
         }
