@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using BlogProject.Data;
 using BlogProject.Models;
 using BlogProject.Services;
+using Microsoft.AspNetCore.Http;
 
 namespace BlogProject.Controllers
 {
@@ -15,11 +16,13 @@ namespace BlogProject.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly ISlugService _slugService;
+        private readonly IImageService _imageService;
 
-        public PostsController(ApplicationDbContext context, ISlugService slugService)
+        public PostsController(ApplicationDbContext context, ISlugService slugService, IImageService imageService)
         {
             _context = context;
             _slugService = slugService;
+            _imageService = imageService;
         }
 
         // GET: Posts
@@ -80,6 +83,12 @@ namespace BlogProject.Controllers
                 
 
                 post.Slug = slug;
+                
+                post.ImageData = await _imageService.EncodeImageAsync(post.Image);
+                post.ImageType = _imageService.ContentType(post.Image);
+                
+
+
 
                 _context.Add(post);
                 await _context.SaveChangesAsync();
@@ -113,7 +122,7 @@ namespace BlogProject.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,BlogId,Title,Abstract,Content,ReadyStatus,Image")] Post post)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,BlogId,Title,Abstract,Content,ReadyStatus")] Post post, IFormFile newImage)
         {
             if (id != post.Id)
             {
@@ -124,8 +133,29 @@ namespace BlogProject.Controllers
             {
                 try
                 {
+                    var newPost = await _context.Posts.FindAsync(post.Id);
+
+
+
+
                     post.Updated = DateTime.Now;
-                    _context.Update(post);
+                    if (newPost.BlogId != post.BlogId) newPost.BlogId = post.BlogId;
+                    if (newPost.Title != post.Title) newPost.Title = post.Title;
+                    if (newPost.Abstract != post.Abstract) newPost.Abstract = post.Abstract;
+                    if (newPost.Content != post.Content) newPost.Content = post.Content;
+                    if (newPost.ReadyStatus != post.ReadyStatus) newPost.ReadyStatus = post.ReadyStatus;
+                    if(newImage is not null)
+                    {
+                        newPost.ImageData = await _imageService.EncodeImageAsync(newImage);
+                        newPost.ImageType = _imageService.ContentType(newImage);
+                    }
+
+
+
+
+
+
+                    
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
