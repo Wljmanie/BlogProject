@@ -32,7 +32,7 @@ function AddTag() {
 }
 
 function DeleteTag() {
-
+    let counter = 1;
     let tagList = document.getElementById("TagList");
 
     if (!tagList) return false;
@@ -42,12 +42,18 @@ function DeleteTag() {
         });
         return true;
     }
+
+    while (counter > 0) {
         let selectedIndex = tagList.selectedIndex;
         if (selectedIndex >= 0) {
+
             tagList.options[selectedIndex] = null;
            
-        }
+        } else {
+            counter = 0;
         index--;
+        }
+    }
     
 
 
