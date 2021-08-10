@@ -35,6 +35,16 @@ $("form").on("submit", function () {
     $("#TagList option").prop("selected", "selected");
 })
 
+if (tagValues != '') {
+    let tagArray = tagValues.split(",");
+    for (let i = 0; i < tagArray.length; i++) {
+        ReplaceTag(tagArray[i], i);
+        index++;
+    }
+}
 
-
+function ReplaceTag(tag, index) {
+    let newOption = new Option(tag, tag);
+    document.getElementById("TagList").options[index] = newOption;
+}
 
