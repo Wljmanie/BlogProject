@@ -9,6 +9,8 @@ using BlogProject.Data;
 using BlogProject.Models;
 using BlogProject.Services;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
 
 namespace BlogProject.Controllers
 {
@@ -17,12 +19,14 @@ namespace BlogProject.Controllers
         private readonly ApplicationDbContext _context;
         private readonly ISlugService _slugService;
         private readonly IImageService _imageService;
+        private readonly UserManager<BlogUser> _userManager;
 
-        public PostsController(ApplicationDbContext context, ISlugService slugService, IImageService imageService)
+        public PostsController(ApplicationDbContext context, ISlugService slugService, IImageService imageService, UserManager<BlogUser> userManager)
         {
             _context = context;
             _slugService = slugService;
             _imageService = imageService;
+            _userManager = userManager;
         }
 
         // GET: Posts
@@ -43,6 +47,7 @@ namespace BlogProject.Controllers
             var post = await _context.Posts
                 .Include(p => p.Blog)
                 .Include(p => p.BlogUser)
+                .Include(p => p.Tags)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (post == null)
             {
@@ -65,11 +70,14 @@ namespace BlogProject.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("BlogId,Title,Abstract,Content,ReadyStatus,Image")] Post post)
+        //[Authorize]
+        public async Task<IActionResult> Create([Bind("BlogId,Title,Abstract,Content,ReadyStatus,Image")] Post post, List<string> tagValues)
         {
             if (ModelState.IsValid)
             {
                 post.Created = DateTime.Now;
+
+                post.BlogUserId = _userManager.GetUserId(User);
 
                 //Create the slug and determine if it is unique
                 var slug = _slugService.UrlFriendly(post.Title);
@@ -86,12 +94,23 @@ namespace BlogProject.Controllers
                 
                 post.ImageData = await _imageService.EncodeImageAsync(post.Image);
                 post.ImageType = _imageService.ContentType(post.Image);
-                
-
-
-
                 _context.Add(post);
                 await _context.SaveChangesAsync();
+                
+                
+                foreach (var tag in tagValues)
+                {
+                    _context.Add(new Tag()
+                    {
+                        PostId = post.Id,
+                        BlogUserId = _userManager.GetUserId(User),
+                        Text = tag
+                    });
+                }
+
+                await _context.SaveChangesAsync();
+
+                
                 return RedirectToAction(nameof(Index));
             }
             ViewData["BlogId"] = new SelectList(_context.Blogs, "Id", "Name", post.BlogId);
