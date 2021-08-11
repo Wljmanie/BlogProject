@@ -62,6 +62,8 @@ namespace BlogProject
             //Register our Slug Service
             services.AddScoped<ISlugService, BasicSlugService>();
 
+            services.AddScoped<BlogSearchService>();
+
 
         }
 
