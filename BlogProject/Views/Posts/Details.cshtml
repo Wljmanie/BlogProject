@@ -46,5 +46,41 @@
 
 <hr />
 
+<div>
+    @if(User.Identity.IsAuthenticated) 
+    { 
+        <form asp-controller="Comments" asp-action="Create" method="post">
+            @Html.Hidden("PostId", Model.Id)
+            <div class=" form-group d-grid">
+                <label class="h2 font-weight-bold">Comment</label>
+                <textarea name="body" class="form-control" rows="10"></textarea>
+            </div>
+
+            <div class="d-grid">
+                <button type="submit" class="btn btn-dark btn-sm">Submit</button>
+            </div>
+
+
+        </form>
+        
+
+
+    }
+            else
+            {
+                <div class="d-grid">
+                    <a class="btn btn-sm btn-dark" a asp-area="Identity" asp-page="/Account/Login">
+                        Login to add Comments
+                    </a>
+                </div>
+            }
+
+
+</div>
+
+
+
+
+
 <hr />
 
