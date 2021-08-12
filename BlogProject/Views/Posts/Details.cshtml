@@ -152,7 +152,13 @@
 
                         }*@
                     <button type="button" data-bs-toggle="modal" data-bs-target="@($"#moderateModal{counter}")" class="btn-sm btn-dark float-end font-weight-bold">Moderate</button>
-                    <button type="button" data-bs-toggle="modal" data-bs-target="@($"#deleteModal{counter}")" class="btn-sm btn-dark float-end font-weight-bold">Delete</button>
+                    @*This form should be visible while in moderation and an actual confirm behind the clicking.*@
+                    
+                    <form asp-action="Delete" asp-controller="Comments">
+                        @Html.Hidden("Id", comment.Id)
+                        @Html.Hidden("Slug", comment.Post.Slug)
+                    <button type="submit" data-bs-toggle="modal" data-bs-target="@($"#deleteModal{counter}")" class="btn-sm btn-dark float-end font-weight-bold">Delete</button>
+                    </form>
                     <button type="button" data-bs-toggle="modal" data-bs-target="@($"#editModal{counter}")" class="btn-sm btn-dark float-end font-weight-bold">Edit</button>
                 </div>
 
