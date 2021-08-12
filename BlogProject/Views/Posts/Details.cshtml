@@ -1,5 +1,6 @@
 ﻿@using BlogProject.Services
 @using Microsoft.AspNetCore.Identity
+@using BlogProject.Enums
 
 @model BlogProject.Models.Post
 @inject IImageService imageService
@@ -52,8 +53,8 @@
 <hr />
 
 <div>
-    @if(User.Identity.IsAuthenticated) 
-    { 
+    @if (User.Identity.IsAuthenticated)
+    {
         <form asp-controller="Comments" asp-action="Create" method="post">
             @Html.Hidden("PostId", Model.Id)
             @Html.Hidden("Slug", Model.Slug)
@@ -68,18 +69,18 @@
 
 
         </form>
-        
+
 
 
     }
-            else
-            {
+    else
+    {
                 <div class="d-grid">
                     <a class="btn btn-sm btn-dark" a asp-area="Identity" asp-page="/Account/Login">
                         Login to add Comments
                     </a>
                 </div>
-            }
+    }
 
 
 </div>
@@ -92,22 +93,51 @@
 </div>
 
 <div class="d-grid justify-content-center">
+    @{int counter = 0; }
 
     @foreach (var comment in Model.Comments)
     {
-        
-
-
-
 
 
         <div class="border-2 mb-2 bg-light">
             <img class="mr-3 mt-3 rounded-circle" style="width:60px;" src="@imageService.DecodeImage(comment.BlogUser.ImageData, comment.BlogUser.ImageType)" />
             <div class="text-body mt-2">
                 <h4>@comment.BlogUser.FullName</h4>
-                <small class="mt-1"><i>Posted on @comment.Created.ToString("MMM dd, yyyy")</i></small>
-                <p class="mt-1">@comment.Body</p>
+                <small class="mt-1"><i>
 
+    @if (comment.Moderated is not null)
+    {
+        <span>
+            Moderated on @comment.Moderated?.ToString("MMM dd,yyyy")
+            @*  Deleted on @comment.Deleted?.ToString("MMM dd, yyyy")*@
+        </span>
+        <p class="mt-1">@comment.ModeratedBody</p>
+
+
+    }
+    @*else if (comment.Deleted is not null)
+        {
+                <span>
+
+
+                </span>
+        }*@
+    else
+    {
+        <span>
+
+            Posted on @comment.Created.ToString("MMM dd, yyyy")
+        </span>
+        <p class="mt-1">@comment.Body</p>
+
+    }
+
+
+
+</i></small>
+               
+                
+                
 
 
 
@@ -118,8 +148,12 @@
             {
                 <hr />
                 <div class="row">
+                    @*@if(User.IsInRole(BlogProject.Enums.BlogRole.Moderator.ToString()) && comment.Deleted is null){
 
-                    <button type="button" data-bs-toggle="modal" data-bs-target="#editModal" class="btn-sm btn-dark float-end font-weight-bold">Edit</button>
+                        }*@
+                    <button type="button" data-bs-toggle="modal" data-bs-target="@($"#moderateModal{counter}")" class="btn-sm btn-dark float-end font-weight-bold">Moderate</button>
+                    <button type="button" data-bs-toggle="modal" data-bs-target="@($"#deleteModal{counter}")" class="btn-sm btn-dark float-end font-weight-bold">Delete</button>
+                    <button type="button" data-bs-toggle="modal" data-bs-target="@($"#editModal{counter}")" class="btn-sm btn-dark float-end font-weight-bold">Edit</button>
                 </div>
 
 
@@ -131,7 +165,7 @@
 
 
         <!-- Modal -->
-        <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal fade" id="@($"editModal{counter}")" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -160,9 +194,51 @@
 
 
 
+        <!-- Modal -->
+        <div class="modal fade" id="@($"moderateModal{counter}")" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Moderate Comment...</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form asp-action="Moderate" asp-controller="Comments">
+                            @Html.Hidden("Id", comment.Id)
+                            @Html.Hidden("Body", comment.Body)
+
+
+                            <div class="form-group">
+                                <label class="form-label">Original Comment</label>
+                                <textarea disabled class="form-control" style="resize:none">@comment.Body</textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <textarea required name="ModeratedBody" class="form-control" required>@comment.ModeratedBody</textarea>
+
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Reason for Moderation</label>
+                                <select class="form-control" asp-for="@comment.ModerationType" name="ModerationType" asp-items="Html.GetEnumSelectList<ModerationType>()"></select>
+                            </div>
+
+                            <button class="btn-sm btn-dark border-success font-weight-bold" type="submit">Submit</button>
+
+
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
 
         <hr />
-
+        counter++;
 
 
     }
